@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="">
+<head th:replace="~{fragments/header}"></head>
+
+<body>
+<div th:replace="~{fragments/messages}"></div>
+
+<h1 class="mb-4">Загрузка: [[${type}]]</h1>
+
+<form method="post" enctype="multipart/form-data" th:action="@{/upload}">
+    <input type="hidden" name="type" th:value="${type}" />
+
+    <div class="mb-3">
+        <label class="form-label">Название директории</label>
+        <input type="text" class="form-control" name="directory" placeholder="Оставьте пустым для Backup_...">
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Выберите файл(ы)</label>
+        <input type="file"
+               class="form-control"
+               name="files"
+               multiple
+               th:attr="accept=${type == 'photo'} ? 'image/*' : (${type == 'video'} ? 'video/*,.mkv,.avi,.mov,.webm' : '')">
+    </div>
+
+    <button type="submit" class="btn btn-primary">Отправить</button>
+    <a th:href="@{/}" class="btn btn-outline-secondary">Отменить</a>
+</form>
+
+<div id="loadingSpinner" class="text-center mt-4" style="display: none;">
+    <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Загрузка...</span>
+    </div>
+    <p>Загрузка файла...</p>
+</div>
+
+<script>
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function () {
+        setTimeout(() => {
+            document.getElementById('loadingSpinner').style.display = 'block';
+        }, 1000);
+    });
+</script>
+
+<footer th:replace="~{fragments/footer :: footer}"></footer>
+</body>
+</html>

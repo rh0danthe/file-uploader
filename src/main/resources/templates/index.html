@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header}"></head>
+
+<body>
+<div th:replace="~{fragments/messages}"></div>
+
+<h1 class="mb-4 text-center">Выберите тип контента:</h1>
+
+<div class="d-grid gap-3 col-12 col-md-6 mx-auto">
+    <a class="btn btn-primary btn-lg" th:href="@{/upload(type='photo')}">Фото</a>
+    <a class="btn btn-secondary btn-lg" th:href="@{/upload(type='video')}">Видео</a>
+    <a class="btn btn-success btn-lg" th:href="@{/upload(type='other')}">Другое</a>
+</div>
+
+<footer th:replace="~{fragments/footer :: footer}"></footer>
+</body>
+</html>
