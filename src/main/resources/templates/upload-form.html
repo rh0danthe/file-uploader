@@ -3,26 +3,36 @@
 <head th:replace="~{fragments/header}"></head>
 
 <body>
+
 <div th:replace="~{fragments/messages}"></div>
 
 <h1 class="mb-4">Загрузка: [[${type}]]</h1>
 
 <form method="post" enctype="multipart/form-data" th:action="@{/upload}">
-    <input type="hidden" name="type" th:value="${type}" />
+    <input type="hidden" id="typeInput" name="type" th:value="${type}" />
 
     <div class="mb-3">
         <label class="form-label">Название директории</label>
-        <input type="text" class="form-control" name="directory" placeholder="Оставьте пустым для Backup_...">
+        <input type="text" class="form-control" name="directory"
+               placeholder="Оставьте пустым для Backup_...">
     </div>
 
     <div class="mb-3">
         <label class="form-label">Выберите файл(ы)</label>
-        <input type="file"
-               class="form-control"
-               name="files"
-               multiple
-               th:attr="accept=${type == 'photo'} ? 'image/*' : (${type == 'video'} ? 'video/*,.mkv,.avi,.mov,.webm' : '')">
+
+        <div th:switch="${type}">
+            <input type="file" class="form-control" name="files" multiple
+                   th:case="'photo'" accept="image/*"/>
+
+            <input type="file" class="form-control" name="files" multiple
+                   th:case="'video'" accept="video/*,.mkv,.avi,.mov,.webm"/>
+
+            <input type="file" class="form-control" name="files" multiple
+                   th:case="*"
+                   accept="*/*"/>
+        </div>
     </div>
+
 
     <button type="submit" class="btn btn-primary">Отправить</button>
     <a th:href="@{/}" class="btn btn-outline-secondary">Отменить</a>
@@ -37,11 +47,57 @@
 
 <script>
     const form = document.querySelector('form');
-    form.addEventListener('submit', function () {
+    const fileInput = document.getElementById('fileInput');
+    const typeInput = document.getElementById('typeInput');
+
+    const MAX_SIZE_MB = 2000;
+    const MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024;
+
+    form.addEventListener('submit', function (e) {
+        const files = fileInput.files;
+        const type = typeInput.value;
+
+        for (const file of files) {
+            if (file.size > MAX_SIZE_BYTES) {
+                showToast(`Файл "${file.name}" превышает ${MAX_SIZE_MB} MB!`, 'danger');
+                e.preventDefault();
+                return;
+            }
+
+            if (type === 'other') {
+                const isImage = file.type.startsWith('image/');
+                const isVideo = file.type.startsWith('video/');
+                const videoExts = ['.mkv', '.avi', '.mov', '.webm', '.mp4'];
+                const fileName = file.name.toLowerCase();
+
+                if (isImage || isVideo || videoExts.some(ext => fileName.endsWith(ext))) {
+                    showToast(`Файл "${file.name}" недопустим для раздела "Другое"!`, 'danger');
+                    e.preventDefault();
+                    return;
+                }
+            }
+        }
+
         setTimeout(() => {
             document.getElementById('loadingSpinner').style.display = 'block';
         }, 1000);
     });
+
+    function showToast(message, type) {
+        const container = document.getElementById('messages-container');
+        const toast = document.createElement('div');
+        toast.className = `toast text-white bg-${type} border-0 mb-2`;
+        toast.role = 'alert';
+        toast.innerHTML = `
+            <div class="d-flex">
+                <div class="toast-body">${message}</div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto"
+                        data-bs-dismiss="toast"></button>
+            </div>
+        `;
+        container.appendChild(toast);
+        new bootstrap.Toast(toast, { delay: 4000 }).show();
+    }
 </script>
 
 <footer th:replace="~{fragments/footer :: footer}"></footer>
